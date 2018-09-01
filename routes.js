@@ -10,7 +10,7 @@ const routes = (server, options, next) => {
     method: 'GET',
     path: '/',
     handler: (request, reply) => {
-      reply('hello world! 123');
+      reply('sample world! 123');
     },
   });
   next();
