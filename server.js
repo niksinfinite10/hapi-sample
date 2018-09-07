@@ -1,58 +1,52 @@
 const Hapi = require('hapi');
-const routes = require('./routes');
-const server = new Hapi.Server();
 
-server.connection({ port: 4000 });
-
-// const routes = (server, options, next) => {
-//   server.route({
-//     method: 'GET',
-//     path: '/info',
-//     handler: (request, reply) => {
-//       reply('info page');
-//     }
-//   });
-//   server.route({
-//     method: 'GET',
-//     path: '/',
-//     handler: (request, reply) => {
-//       reply('hello world! 123');
-//     },
-//   });
-//   next();
-// };
-
-const registrations = [
-    {
-      plugin: require('./routes'),
-    },
-    {
-      plugin: require('good'),
-      options: {
-        reporter: require('good-console'),
-        events: { response: '*' },
-      }
-    },
-  ];
-// const plugins = [{
-//   register: require('./routes'),
-//   options: {},
-//   },{
-//   register: require('good'),
-//   options: {
-//     reporter: require('good-console'),
-//     events: { response: '*' },
-//   },
-// }];
-
-server.register({registrations: registrations}, (err) => {
-  if (err) {
-    throw err;
-  }
-  server.start((err) => {
-    if (err) {
-      throw err;
-    }
-    console.log('server has strated at ', server.info.uri);
-  });
+const server = Hapi.server({
+    port: 3000,
+    host: 'localhost'
 });
+
+server.route({
+    method: 'GET',
+    path: '/',
+    handler: (request, h) => {
+      const name = 'nikhil';
+      const same = 'asd';
+      
+        return 'Hello, world!';
+    }
+});
+
+server.route({
+    method: 'GET',
+    path: '/{name}',
+    handler: (request, h) => {
+
+        // request.log(['a', 'name'], "Request name");
+        // or
+        request.logger.info('In handler %s', request.path);
+
+        return `Hello, ${encodeURIComponent(request.params.name)}!`;
+    }
+});
+
+const init = async () => {
+
+    await server.register({
+        plugin: require('hapi-pino'),
+        options: {
+            prettyPrint: false,
+            logEvents: ['response']
+        }
+    });
+
+    await server.start();
+    console.log(`Server running at: ${server.info.uri}`);
+};
+
+process.on('unhandledRejection', (err) => {
+
+    console.log(err);
+    process.exit(1);
+});
+
+init();
